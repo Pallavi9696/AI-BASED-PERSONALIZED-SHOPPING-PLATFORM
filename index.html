@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI-BASED PERSONALIZED SHOPPING PLATFORM</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<h2>AI-BASED PERSONALIZED SHOPPING PLATFORM</h2>
+
+<!-- Upload Form -->
+<form action="/analyze" method="POST" enctype="multipart/form-data">
+    <input type="file" name="photo" required>
+    <button type="submit">Analyze</button>
+</form>
+
+<hr>
+
+<!-- Camera Section -->
+<h3>Use Camera</h3>
+
+<video id="cam" width="300" autoplay></video><br>
+<button onclick="capture()">Capture</button>
+
+<form id="camForm" action="/capture" method="POST">
+    <input type="hidden" name="image" id="imageData">
+</form>
+
+<script>
+navigator.mediaDevices.getUserMedia({ video: true })
+.then(stream => {
+    document.getElementById("cam").srcObject = stream;
+});
+
+// fix: compress before sending (solves Request Entity Too Large)
+function capture() {
+    let video = document.getElementById("cam");
+    let canvas = document.createElement("canvas");
+    canvas.width = 350;  // reduced size
+    canvas.height = 350;
+
+    let ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, 350, 350);
+
+    // compress to JPEG 50%
+    let dataURL = canvas.toDataURL("image/jpeg", 0.5);
+
+    document.getElementById("imageData").value = dataURL;
+    document.getElementById("camForm").submit();
+}
+</script>
+
+{% if uploaded_image %}
+<h3>Uploaded Image:</h3>
+<img src="/uploads/{{ uploaded_image }}" width="250">
+
+<h3>Results:</h3>
+<p><b>Skin Tone:</b> {{ skin }}</p>
+<p><b>Body Type:</b> {{ body }}</p>
+
+<h3>Recommendations:</h3>
+<p><b>Outfits:</b> {{ rec.outfits }}</p>
+<p><b>Makeup:</b> {{ rec.makeup }}</p>
+<p><b>Best Colors:</b> {{ rec.colors }}</p>
+{% endif %}
+
+</body>
+</html>
